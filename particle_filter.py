@@ -4,7 +4,7 @@ import random
 import numpy as np
 import bisect
 import copy
-from utils import add_noise as utils_add_noise
+from utils import add_noise as utils_add_noise, add_noise_laplace, add_noise_cauchy
 
 class Particle:
     """
@@ -22,21 +22,40 @@ class Particle:
         self.orient = orient
         self.weight = weight
     
-    def add_noise(self, std_pos=1.0, std_orient=1.0):
+    def add_noise(self, std_pos=1.0, std_orient=1.0, noise_type="gaussian"):
         """
         Adds noise to pos and orient
             this is useful when sampling from a distribution with mean at
             the given pos and orient
         std_pos: standard deviation for noise in position
         std_orient: standard deviation for noise in orientation
+        noise_type: type of noise distribution ("gaussian", "laplace", or "cauchy")
 
         Note: orient must have unit norm
         """
-        self.pos[0] = utils_add_noise(x=self.pos[0], std=std_pos)
-        self.pos[1] = utils_add_noise(x=self.pos[1], std=std_pos)
+        if noise_type == "gaussian":
+            noise_func = utils_add_noise
+            param_pos = std_pos
+            param_orient = std_orient
+        elif noise_type == "laplace":
+            # For Laplace: Use larger scale to make heavy tails more visible
+            noise_func = add_noise_laplace
+            param_pos = std_pos * 1.2
+            param_orient = std_orient * 1.2
+        elif noise_type == "cauchy":
+            # Cauchy has no variance, use smaller scale due to heavy tails
+            noise_func = add_noise_cauchy
+            param_pos = std_pos * 0.5
+            param_orient = std_orient * 0.5
+        else:
+            raise ValueError(f"Unknown noise type: {noise_type}")
+        
+        # Apply noise to position (reusing the pattern from base Particle)
+        self.pos[0] = noise_func(x=self.pos[0], scale=param_pos)
+        self.pos[1] = noise_func(x=self.pos[1], scale=param_pos)
         while True:
-            self.orient[0] = utils_add_noise(x=self.orient[0], std=std_orient)
-            self.orient[1] = utils_add_noise(x=self.orient[1], std=std_orient)
+            self.orient[0] = noise_func(x=self.orient[0], scale=param_orient)
+            self.orient[1] = noise_func(x=self.orient[1], scale=param_orient)
             if np.linalg.norm(self.orient) >= 1e-8:
                 break
         self.orient = self.orient / np.linalg.norm(self.orient)
@@ -46,7 +65,7 @@ class ParticleFilter:
     Particle filter for estimating position and orientation (pose) in a rectangular map, from sensor readings
     """
 
-    def __init__(self, num_particles, minx, maxx, miny, maxy):
+    def __init__(self, num_particles, minx, maxx, miny, maxy, noise_type="gaussian"):
         """
         Initialize the particle filter
         num_particles: number of particles for this particle filter
@@ -54,12 +73,14 @@ class ParticleFilter:
         maxx: upper bound on x coordinate of position
         miny: lower bound on y coordinate of position
         maxy: uppoer bound on y coordinate of position
+        noise_type: type of noise distribution ("gaussian", "laplace", or "cauchy")
         """
         self.num_particles = num_particles
         self.minx = minx
         self.maxx = maxx
         self.miny = miny
         self.maxy = maxy
+        self.noise_type = noise_type
         self.particles = self.initialize_particles()
         
     def initialize_particles(self):
@@ -188,6 +209,48 @@ def weight_gaussian_kernel(x1, x2, std = 500):
     """
     distance = np.linalg.norm(np.asarray(x1) - np.asarray(x2))
     return np.exp(-distance ** 2 / (2 * std))
+
+def weight_laplace_kernel(x1, x2, scale=500):
+    """
+    TASK 4: Returns the Laplace kernel of the distance between vectors x1 and x2
+    
+    The Laplace distribution PDF is: f(x) = (1/(2*scale)) * exp(-|x|/scale)
+    For use as a weight, we can drop the normalization constant
+    
+    Args:
+        x1, x2: vectors to compare
+        scale: scale parameter (controls how much to penalize distance)
+    
+    Returns:
+        weight based on Laplace kernel
+    
+    Hint: The Laplace distribution uses absolute distance instead of squared distance
+          Compare with Gaussian kernel: exp(-distance²/(2*std)) 
+          vs Laplace kernel: exp(-distance/scale)
+    """
+    distance = np.linalg.norm(np.asarray(x1) - np.asarray(x2))
+    return np.exp(-distance / scale)
+
+
+def weight_cauchy_kernel(x1, x2, scale=500):
+    """
+    TASK 4: Returns the Cauchy kernel of the distance between vectors x1 and x2
+    
+    The Cauchy distribution PDF is: f(x) = 1/(pi*scale*(1 + (x/scale)^2))
+    For use as a weight, we can drop the normalization constant
+    
+    Args:
+        x1, x2: vectors to compare
+        scale: scale parameter (controls how much to penalize distance)
+    
+    Returns:
+        weight based on Cauchy kernel
+    
+    Hint: The Cauchy kernel uses NO exponential, just polynomial decay
+          Cauchy kernel: 1 / (1 + (distance/scale)²)
+    """
+    distance = np.linalg.norm(np.asarray(x1) - np.asarray(x2))
+    return 1.0 / (1.0 + (distance / scale) ** 2)
 
 def normalize_weights(particles):
     """

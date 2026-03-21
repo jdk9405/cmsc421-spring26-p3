@@ -53,7 +53,7 @@ class Car:
         elif noise_dist == "uniform":
             self.gps_measurement = self.pos + np.random.uniform(-self.gps_noise_width / 2.0, self.gps_noise_width / 2.0, 2)
         elif noise_dist == "laplace":
-            # EXTRA CREDIT: Laplace noise for GPS
+            # TASK 4: Laplace noise for GPS
             # Uses student-implemented add_noise_laplace from utils.py
             # Use larger scale to make Laplace characteristics more visible (heavier tails)
             scale = np.sqrt(self.gps_noise_var) * 10
@@ -62,7 +62,7 @@ class Car:
                 add_noise_laplace(self.pos[1], scale)
             ])
         elif noise_dist == "cauchy":
-            # EXTRA CREDIT: Cauchy noise for GPS
+            # TASK 4: Cauchy noise for GPS
             # Uses student-implemented add_noise_cauchy from utils.py
             # Cauchy has undefined variance; use sqrt(gps_noise_var) as scale
             scale = np.sqrt(self.gps_noise_var)
