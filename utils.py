@@ -22,12 +22,12 @@ def add_noise(x, std):
     return x + np.random.normal(0, std)
 
 # ============================================================================
-# EXTRA CREDIT: Implement these functions for Laplace and Cauchy noise
+# TASK 4: Implement these functions for Laplace and Cauchy noise
 # ============================================================================
 
 def add_noise_laplace(x, scale):
     """
-    EXTRA CREDIT: Add Laplace (double exponential) noise to x
+    TASK 4: Add Laplace (double exponential) noise to x
     
     The Laplace distribution has PDF: f(x) = (1/(2*scale)) * exp(-|x-mu|/scale)
     where mu is the location parameter (mean) and scale is the diversity parameter
@@ -42,13 +42,13 @@ def add_noise_laplace(x, scale):
     
     Hint: Use np.random.laplace(loc, scale) to generate Laplace-distributed random numbers
     """
-    # BEGIN_YOUR_CODE (Extra Credit) ###########################################
+    # BEGIN_YOUR_CODE (TASK 4) ###########################################
     raise NotImplementedError
     # END_YOUR_CODE ############################################################
 
 def add_noise_cauchy(x, scale):
     """
-    EXTRA CREDIT: Add Cauchy (Lorentz) noise to x
+    TASK 4: Add Cauchy (Lorentz) noise to x
     
     The Cauchy distribution has PDF: f(x) = 1/(pi*scale*(1 + ((x-loc)/scale)^2))
     where loc is the location parameter and scale is the scale parameter
@@ -64,7 +64,7 @@ def add_noise_cauchy(x, scale):
     
     Hint: Use np.random.standard_cauchy() and scale it appropriately
     """
-    # BEGIN_YOUR_CODE (Extra Credit) ###########################################
+    # BEGIN_YOUR_CODE (TASK 4) ###########################################
     raise NotImplementedError
     # END_YOUR_CODE ############################################################
 
