@@ -94,6 +94,12 @@ class App(Tk):
         self.car1_label.pack()
         self.car2_label = Label(self, text="Car 2: Lap 0")
         self.car2_label.pack()
+
+        # Add labels for displaying particle counts
+        self.car1_particle_count_label = Label(self, text="Car 1 Particle Count: 0")
+        self.car1_particle_count_label.pack()
+        self.car2_particle_count_label = Label(self, text="Car 2 Particle Count: 0")
+        self.car2_particle_count_label.pack()
         
         # Add noise distribution label
         self.noise_label = Label(self, text=f"Noise Distribution: {noise_type}", font=("Arial", 10, "bold"))
@@ -253,7 +259,10 @@ class App(Tk):
         # Update race progress labels
         self.car1_label.config(text=f"Car 1: Lap {self.simulator.car1_laps}")
         self.car2_label.config(text=f"Car 2: Lap {self.simulator.car2_laps}")
-        
+        if self.simulator.do_particle_filtering:
+            self.car1_particle_count_label.config(text=f"Car 1 Particle Count: {self.simulator.particle_filter1.num_particles}")
+            self.car2_particle_count_label.config(text=f"Car 2 Particle Count: {self.simulator.particle_filter2.num_particles}") 
+
     def mainloop(self, n=0):
         self.__loop()
         Tk.mainloop(self, n)
@@ -265,7 +274,6 @@ def main():
     parser.add_argument("-s", "--sensor_noise_std", default=0.0, type=float, help='Std dev of car\'s sensor noise')
     parser.add_argument("-gv", "--gps_noise_var", default=10.0, type=float, help='Variance of gaussian noise for GPS measurement (Kalman filter)')
     parser.add_argument("-gw", "--gps_noise_width", default=20, type=float, help='Width of uniformly random noise for GPS measurement (Kalman filter)')
-    # EXTRA CREDIT: Specify noise distribution type
     parser.add_argument("-nt", "--noise_type", default="gaussian", choices=["gaussian", "uniform", "laplace", "cauchy"], help='Noise distribution type (gaussian, uniform, laplace, cauchy)')
     args = parser.parse_args()
 

@@ -4,7 +4,8 @@ import random
 import numpy as np
 import bisect
 import copy
-from utils import add_noise as utils_add_noise, add_noise_laplace, add_noise_cauchy
+from utils import utils_add_noise
+from utils import add_noise_laplace, add_noise_cauchy
 
 class Particle:
     """
@@ -51,11 +52,11 @@ class Particle:
             raise ValueError(f"Unknown noise type: {noise_type}")
         
         # Apply noise to position (reusing the pattern from base Particle)
-        self.pos[0] = noise_func(x=self.pos[0], scale=param_pos)
-        self.pos[1] = noise_func(x=self.pos[1], scale=param_pos)
+        self.pos[0] = noise_func(self.pos[0], param_pos)
+        self.pos[1] = noise_func(self.pos[1], param_pos)
         while True:
-            self.orient[0] = noise_func(x=self.orient[0], scale=param_orient)
-            self.orient[1] = noise_func(x=self.orient[1], scale=param_orient)
+            self.orient[0] = noise_func(self.orient[0], param_orient)
+            self.orient[1] = noise_func(self.orient[1], param_orient)
             if np.linalg.norm(self.orient) >= 1e-8:
                 break
         self.orient = self.orient / np.linalg.norm(self.orient)

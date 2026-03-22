@@ -15,8 +15,10 @@ from racetrack import load_racetrack
 # EXTRA CREDIT: Import extended filters
 try:
     from particle_filter_extra import ParticleFilterExtra
+    test_pf = ParticleFilterExtra(10, 0, 1, 0, 1)
+    test_pf.kld_resample([])
     EXTRA_CREDIT_AVAILABLE = True
-except ImportError:
+except RuntimeError:
     EXTRA_CREDIT_AVAILABLE = False
     print("Note: Extra credit modules not fully implemented yet")
 
@@ -53,7 +55,6 @@ class Simulator:
         self.gps_noise_width = gps_noise_width
         self.gps_noise_dist = noise_type
         
-        # EXTRA CREDIT: Support for different noise distributions
         # Automatically use extended filters for laplace/cauchy noise
         self.pf_noise_type = noise_type  # For particle filter transition noise
         self.sensor_noise_type = noise_type  # For sensor measurement noise
@@ -252,13 +253,12 @@ class Simulator:
 
     def init_particles(self):
         self.do_particle_filtering = True
-        # EXTRA CREDIT: Use extended particle filter for laplace/cauchy noise
-        if self.pf_noise_type in ["laplace", "cauchy"] and EXTRA_CREDIT_AVAILABLE:
+        if EXTRA_CREDIT_AVAILABLE:
             self.particle_filter1 = ParticleFilterExtra(self.num_particles, 0, WORLD_WIDTH, 0, WORLD_HEIGHT, noise_type=self.pf_noise_type)
             self.particle_filter2 = ParticleFilterExtra(self.num_particles, 0, WORLD_WIDTH, 0, WORLD_HEIGHT, noise_type=self.pf_noise_type)
         else:
-            self.particle_filter1 = ParticleFilter(self.num_particles, 0, WORLD_WIDTH, 0, WORLD_HEIGHT)
-            self.particle_filter2 = ParticleFilter(self.num_particles, 0, WORLD_WIDTH, 0, WORLD_HEIGHT)
+            self.particle_filter1 = ParticleFilter(self.num_particles, 0, WORLD_WIDTH, 0, WORLD_HEIGHT, noise_type=self.pf_noise_type)
+            self.particle_filter2 = ParticleFilter(self.num_particles, 0, WORLD_WIDTH, 0, WORLD_HEIGHT, noise_type=self.pf_noise_type)
     
     def stop_particles(self):
         self.do_particle_filtering = False
@@ -300,11 +300,7 @@ class Simulator:
             self.init_kalman()
         
     def toggle_gps_noise_dist(self):
-        # EXTRA CREDIT: Cycle through all noise distributions if available
-        if EXTRA_CREDIT_AVAILABLE:
-            noise_types = ["gaussian", "uniform", "laplace", "cauchy"]
-        else:
-            noise_types = ["gaussian", "uniform"]
+        noise_types = ["gaussian", "uniform", "laplace", "cauchy"]
         
         current_idx = noise_types.index(self.gps_noise_dist) if self.gps_noise_dist in noise_types else 0
         self.gps_noise_dist = noise_types[(current_idx + 1) % len(noise_types)]

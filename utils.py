@@ -43,7 +43,7 @@ def add_noise_laplace(x, scale):
     Hint: Use np.random.laplace(loc, scale) to generate Laplace-distributed random numbers
     """
     # BEGIN_YOUR_CODE (TASK 4) ###########################################
-    raise NotImplementedError
+    return x + np.random.laplace(0, scale)
     # END_YOUR_CODE ############################################################
 
 def add_noise_cauchy(x, scale):
@@ -65,7 +65,7 @@ def add_noise_cauchy(x, scale):
     Hint: Use np.random.standard_cauchy() and scale it appropriately
     """
     # BEGIN_YOUR_CODE (TASK 4) ###########################################
-    raise NotImplementedError
+    return x + np.random.standard_cauchy() * scale
     # END_YOUR_CODE ############################################################
 
 def load_image(path, scale):
