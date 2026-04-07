@@ -4,7 +4,7 @@ import random
 import numpy as np
 import bisect
 import copy
-from utils import utils_add_noise
+from utils import add_noise as utils_add_noise
 from utils import add_noise_laplace, add_noise_cauchy
 
 class Particle:
