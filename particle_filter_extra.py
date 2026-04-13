@@ -32,8 +32,8 @@ from particle_filter import ParticleFilter, normalize_weights, Particle, Weighte
 KLD_EPSILON        = 0.05    # allowed KL error
 KLD_DELTA          = 0.01    # failure probability
 KLD_Z              = 2.326   # z_{1 - delta} = z_{0.99}
-KLD_MIN_PARTICLES  = 50
-KLD_MAX_PARTICLES  = 2000
+KLD_MIN_PARTICLES  = 10      # You can change this if you want
+KLD_MAX_PARTICLES  = 200     # You can change this if you want
 
 # ── Histogram bin resolution ─────────────────────────────────────────────────
 BIN_SIZE_X  = 50   # pixels per cell (x-axis)
@@ -122,6 +122,46 @@ class ParticleFilterExtra(ParticleFilter):
 
         """
         # BEGIN_YOUR_CODE ######################################################
+        #
+        # KLD-Adaptive Resampling
+        # ─────────────────────────────────────────────────────────────────────
+        # Standard particle filtering always resamples exactly N particles.
+        # KLD-sampling (Fox, 2003) instead draws particles *one at a time* and
+        # stops as soon as the sample is "large enough" according to the KL
+        # divergence bound.  The key idea:
+        #
+        #   • We keep a 3-D histogram over (x-bin, y-bin, orientation-bin).
+        #   • Each time a newly-drawn particle lands in a **new** bin (a bin not
+        #     yet seen in this resample pass), we call that bin "occupied".
+        #   • After each new occupied bin k is found, we recompute how many
+        #     particles n we need (via kld_required_n(k)).
+        #   • We stop drawing as soon as  len(new_particles) >= n_required
+        #     (and we have drawn at least KLD_MIN_PARTICLES).
+        #
+        #
+        # Psuedocode:
+        #   occupied_bins ← empty set        # tracks which pose regions are covered
+        #   n_required    ← KLD_MIN_PARTICLES                                                                                                                    
+        #   distribution  ← WeightedDistribution(particles)
+        #                                                                                                                                                        
+        #   LOOP:                                                                                                                                                
+        #     p ← distribution.random_select()
+        #     if p is None:                                                                                                                                      
+        #       create a uniformly random particle within map bounds                                                                                           
+        #     else:                                                                                                                                              
+        #       make a deep copy of p
+        #                                                                                                                                                        
+        #     add p to new_particles                                                                                                                           
+        #
+        #     b ← particle_bin(p)
+        #     if b is a new bin:                                                                                                                                 
+        #       add b to occupied_bins
+        #       recompute n_required using kld_required_n()                                                                             
+        #                                                                                                                                                        
+        #     if stopping condition is met:   # hint: involves n_required and the hard caps
+        #       break 
+        # ─────────────────────────────────────────────────────────────────────
+
         raise NotImplementedError
 
 
